@@ -1,5 +1,11 @@
 "use client";
-import { AxiosError, isAxiosError } from "axios";
+import {
+  hideNotSignedInPopup,
+  showNotSignedInPopup,
+  toggleNotSignedInPopupOpen,
+} from "@/redux/slices/auth";
+import useAppDispatch from "./useAppDispatch";
+import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import axios from "../utils/axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
@@ -32,13 +38,14 @@ export default function useFetch<T extends unknown>({
   body,
   opts,
 }: Params) {
+  const dispatch = useAppDispatch();
   const {
     fetchImmediately = true,
     persistDataWhileFetching = true,
     withAuth = true,
   } = opts ?? {};
 
-  const [err, setErr] = useState<AxiosError | null>(null);
+  const [err, setErr] = useState<AxiosResponse | null>(null);
   const [data, setData] = useState<null | T>(null);
   const [loading, setLoading] = useState(false);
   const notSignedInMsg = (
@@ -66,9 +73,17 @@ export default function useFetch<T extends unknown>({
       const resp = await axios({ url, method, data: customBody ?? body });
       setData(resp.data);
     } catch (err) {
-      if (isAxiosError(err)) {
-        console.log("is axios error");
-      }
+      handleFetchWithoutAuthErr(err);
+    }
+  }
+
+  function handleFetchWithoutAuthErr(err: unknown) {
+    if (isAxiosError(err)) {
+      if (!err.response) return toast("something went wrong");
+      setErr(err.response);
+    } else {
+      console.log("hi");
+      toast("something went completely fucking wrong");
     }
   }
 
