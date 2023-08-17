@@ -1,8 +1,8 @@
-import ReduxProvider from "@/redux/provider";
 import "./globals.css";
 import type { Metadata } from "next";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.min.css";
+import GlobalContextProvider from "./GlobalContextProvider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,10 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ReduxProvider>
+        <GlobalContextProvider>
           {children}
           <ToastContainer hideProgressBar />
-        </ReduxProvider>
+        </GlobalContextProvider>
       </body>
     </html>
   );

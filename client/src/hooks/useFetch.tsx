@@ -1,16 +1,16 @@
 "use client";
-import {
-  hideNotSignedInPopup,
-  showNotSignedInPopup,
-  toggleNotSignedInPopupOpen,
-} from "@/redux/slices/auth";
-import useAppDispatch from "./useAppDispatch";
+import { TAuthResp, TErrCode } from "@shared/types";
 import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import axios from "../utils/axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import isOnline from "@/utils/isOnline";
+import storeAuthRespData from "@/utils/storeAuthRespData";
+import isValidAuthResp from "@/utils/isValidAuthResp";
+import notifyGenericErr from "@/utils/notifyGenericErr";
+import useGetContext from "./useGetContext";
+import { GlobalContext } from "@/app/GlobalContextProvider";
 
 type HttpMethod =
   | "get"
@@ -38,7 +38,7 @@ export default function useFetch<T extends unknown>({
   body,
   opts,
 }: Params) {
-  const dispatch = useAppDispatch();
+  const { notify } = useGetContext(GlobalContext);
   const {
     fetchImmediately = true,
     persistDataWhileFetching = true,
@@ -48,14 +48,12 @@ export default function useFetch<T extends unknown>({
   const [err, setErr] = useState<AxiosResponse | null>(null);
   const [data, setData] = useState<null | T>(null);
   const [loading, setLoading] = useState(false);
-  const notSignedInMsg = (
-    <>
-      <span>You are not signed in.</span> <a href="/sign-in">Sign in here</a>
-    </>
-  );
+  const genericErrContent = "Something went wrong. Try again later";
 
   useEffect(() => {
-    if (fetchImmediately) fetch();
+    (async () => {
+      if (fetchImmediately) await fetch();
+    })();
   }, []);
 
   async function fetch(customBody?: unknown) {
@@ -78,46 +76,89 @@ export default function useFetch<T extends unknown>({
     if (isOnline()) return { ok: true };
 
     setLoading(false);
-    toast("Please check your internet connection");
+    notify("noInternet", "no internet");
     return { ok: false };
-  }
-
-  async function fetchWithAuth(customBody?: unknown) {
-    // TODO: handle expired token errors properly
-    try {
-      const accessToken = getAccessToken();
-      if (!accessToken) return;
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function refreshTokens() {
-    const refreshToken = Cookies.get("refreshToken");
-    if (!refreshToken) return toast(notSignedInMsg);
-
-    try {
-      const refreshTokenDeserialized = JSON.parse(refreshToken);
-      const resp = await axios({
-        url: "http://localhost:3001/auth/get-new-tokens",
-        method,
-        data: { refreshToken },
-      });
-    } catch (err) {
-      console.error(err);
-    }
   }
 
   function fetchTeardown() {
     setLoading(false);
   }
 
-  function getAccessToken() {
-    return Cookies.get("accessToken");
+  async function fetchWithAuth(customBody?: unknown) {
+    const authHeader = await getAuthHeader();
+    if (!authHeader) return;
+
+    try {
+      const resp = await axios({
+        url,
+        method,
+        headers: { Authorization: authHeader },
+        data: customBody ?? body,
+      });
+      setData(resp.data);
+    } catch (err) {
+      handleFetchWithAuthErr(err);
+    }
   }
 
-  function getAuthHeader(accessToken: string) {
+  function handleFetchWithAuthErr(err: unknown) {
+    if (!isAxiosError(err) || !err.response) {
+      return notifyGenericErr();
+    }
+    setErr(err.response);
+  }
+
+  async function getAuthHeader(): Promise<string | null> {
+    let accessToken = Cookies.get("accessToken");
+    if (!accessToken) {
+      const newTokens = await getAndStoreNewTokens();
+      if (!newTokens) return null;
+      accessToken = newTokens.accessToken;
+    }
     return `Bearer ${accessToken}`;
+  }
+
+  async function getAndStoreNewTokens(): Promise<TAuthResp | null> {
+    const refreshToken = Cookies.get("refreshToken");
+    if (!refreshToken) {
+      notify("notSignedIn", "not signed in");
+      return null;
+    }
+
+    try {
+      const data = await getNewTokens(refreshToken);
+      if (!data) return null;
+      storeAuthRespData(data);
+      return data;
+    } catch (err) {
+      handleGetAndStoreNewTokensErr(err);
+      return null;
+    }
+  }
+
+  /**
+   *
+   * @param refreshTokenFromCookies must be serialized (Pass the token as is it in cookies, don't JSON.parse() it)
+   */
+  async function getNewTokens(refreshTokenFromCookies: string) {
+    const refreshTokenDeserialized = JSON.parse(refreshTokenFromCookies);
+    const resp = await axios({
+      url: "/auth/get-new-tokens",
+      method: "post",
+      data: { refreshToken: refreshTokenDeserialized },
+    });
+    if (!isValidAuthResp(resp.data)) {
+      notifyGenericErr();
+      return null;
+    }
+    return resp.data;
+  }
+
+  function handleGetAndStoreNewTokensErr(err: unknown) {
+    if (!isAxiosError(err) || !err.response) {
+      notifyGenericErr();
+    }
+    notify("notSignedIn", "not signed in");
   }
 
   async function fetchWithoutAuth(customBody?: unknown) {
@@ -130,12 +171,10 @@ export default function useFetch<T extends unknown>({
   }
 
   function handleFetchWithoutAuthErr(err: unknown) {
-    if (isAxiosError(err)) {
-      if (!err.response) return toast("something went wrong");
+    if (isAxiosError(err) && err.response) {
       setErr(err.response);
     } else {
-      console.log("hi");
-      toast("something went completely fucking wrong");
+      notifyGenericErr();
     }
   }
 

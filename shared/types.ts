@@ -1,4 +1,4 @@
-export const enum ErrCode {
+export const enum TErrCode {
   ACCESS_TOKEN_EXPIRED = "ACCESS_TOKEN_EXPIRED",
   NO_ACCESS_TOKEN = "NO_ACCESS_TOKEN",
   NO_REFRESH_TOKEN = "NO_REFRESH_TOKEN",
@@ -7,4 +7,13 @@ export const enum ErrCode {
   INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
   ACCESS_DENIED = "ACCESS_DENIED",
   OLD_REFRESH_TOKEN_NOT_FOUND = "OLD_REFRESH_TOKEN_NOT_FOUND",
+}
+
+export interface TAuthResp {
+  accessToken: string;
+  refreshToken: {
+    id: string;
+    token: string;
+  };
+  username?: string;
 }

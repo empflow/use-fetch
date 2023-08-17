@@ -1,5 +1,7 @@
 "use client";
 import useFetch from "@/hooks/useFetch";
+import isValidAuthResp from "@/utils/isValidAuthResp";
+import notifyGenericErr from "@/utils/notifyGenericErr";
 import storeAuthRespData from "@/utils/storeAuthRespData";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -20,6 +22,9 @@ export default function Home() {
 
   useEffect(() => {
     if (!hasSubmitted) return;
+    if (!isValidAuthResp(data)) {
+      return notifyGenericErr();
+    }
     storeAuthRespData(data);
     location.replace("/dashboard");
   }, [data]);

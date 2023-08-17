@@ -1,13 +1,5 @@
 "use client";
-import useAppDispatch from "@/hooks/useAppDispatch";
-import useAppSelector from "@/hooks/useAppSelector";
 import useFetch from "@/hooks/useFetch";
-import {
-  hideNotSignedInPopup,
-  showNotSignedInPopup,
-  toggleNotSignedInPopupOpen,
-} from "@/redux/slices/auth";
-import NotSignedInPopup from "../components/NotSignedInPopup";
 
 export default function Dashboard() {
   const {
@@ -18,7 +10,7 @@ export default function Dashboard() {
   } = useFetch({
     url: "/notes",
     method: "get",
-    opts: { withAuth: false, fetchImmediately: false },
+    opts: { withAuth: true, fetchImmediately: true },
   });
   const {
     data: tagsData,
@@ -28,12 +20,11 @@ export default function Dashboard() {
   } = useFetch({
     url: "/tags",
     method: "get",
-    opts: { withAuth: false, fetchImmediately: false },
+    opts: { withAuth: true, fetchImmediately: true },
   });
 
   return (
     <>
-      <NotSignedInPopup />
       <h1>dashboard</h1>
 
       <div className="flex flex-col gap-5">
@@ -42,7 +33,7 @@ export default function Dashboard() {
           <div>data: {JSON.stringify(notesData)}</div>
           <div>error: {JSON.stringify(notesErr)}</div>
           <div>
-            <button onClick={notesFetch}>fetch</button>
+            <button onClick={() => notesFetch()}>fetch</button>
           </div>
         </div>
 
@@ -51,7 +42,7 @@ export default function Dashboard() {
           <div>data: {JSON.stringify(tagsData)}</div>
           <div>error: {JSON.stringify(tagsErr)}</div>
           <div>
-            <button onClick={tagsFetch}>fetch</button>
+            <button onClick={() => tagsFetch()}>fetch</button>
           </div>
         </div>
       </div>
