@@ -1,8 +1,9 @@
+"use client";
+import useFetch from "@/hooks/useFetch";
+import storeAuthRespData from "@/utils/storeAuthRespData";
 import { FormEvent, useEffect, useState } from "react";
-import useFetch from "./useFetch";
-import storeAuthRespData from "./utils/storeAuthRespData";
 
-function App() {
+export default function Home() {
   const [email, setEmail] = useState("Hayley.Schulist@yahoo.com");
   const [pwd, setPwd] = useState("GffIiAUR_rv7urd0#");
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -12,7 +13,7 @@ function App() {
     body: {
       email,
       password: pwd,
-      captchaBypassToken: import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN,
+      captchaBypassToken: process.env.NEXT_PUBLIC_CAPTCHA_BYPASS_TOKEN,
     },
     opts: { fetchImmediately: false, withAuth: false },
   });
@@ -27,7 +28,6 @@ function App() {
     setHasSubmitted(true);
     await fetch();
   }
-
   return (
     <div>
       <form onSubmit={handleFormSubmit}>
@@ -50,5 +50,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

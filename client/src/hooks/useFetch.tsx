@@ -1,9 +1,9 @@
 import { AxiosError, isAxiosError } from "axios";
-import ErrCodes from "@shared/types";
-import axios from "./utils/axios";
+import axios from "../utils/axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import isOnline from "@/utils/isOnline";
 
 type HttpMethod =
   | "get"
@@ -52,6 +52,7 @@ export default function useFetch<T extends unknown>({
 
   async function fetch(customBody?: unknown) {
     fetchSetup();
+    if (!notifyIfCantFetch().ok) return;
 
     if (withAuth) await fetchWithAuth(customBody);
     else await fetchWithoutAuth(customBody);
@@ -98,6 +99,12 @@ export default function useFetch<T extends unknown>({
     if (!persistDataWhileFetching) setData(null);
     setErr(null);
     setLoading(true);
+  }
+
+  function notifyIfCantFetch(): { ok: boolean } {
+    if (isOnline()) return { ok: true };
+    toast("Please check your internet connection");
+    return { ok: false };
   }
 
   function fetchTeardown() {
