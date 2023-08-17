@@ -1,4 +1,5 @@
 import { AxiosError, isAxiosError } from "axios";
+import ErrCodes from "@shared/types";
 import axios from "./utils/axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
@@ -52,8 +53,10 @@ export default function useFetch<T extends unknown>({
   async function fetch(customBody?: unknown) {
     fetchSetup();
 
-    if (withAuth) fetchWithAuth(customBody);
-    else fetchWithoutAuth(customBody);
+    if (withAuth) await fetchWithAuth(customBody);
+    else await fetchWithoutAuth(customBody);
+
+    fetchTeardown();
   }
 
   async function fetchWithoutAuth(customBody?: unknown) {
@@ -66,6 +69,7 @@ export default function useFetch<T extends unknown>({
   }
 
   async function fetchWithAuth(customBody?: unknown) {
+    // TODO: handle expired token errors properly
     try {
       const accessToken = getAccessToken();
       if (!accessToken) return;
@@ -94,6 +98,10 @@ export default function useFetch<T extends unknown>({
     if (!persistDataWhileFetching) setData(null);
     setErr(null);
     setLoading(true);
+  }
+
+  function fetchTeardown() {
+    setLoading(false);
   }
 
   function getAccessToken() {
