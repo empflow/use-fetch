@@ -68,23 +68,18 @@ export default function useFetch<T extends unknown>({
     fetchTeardown();
   }
 
-  async function fetchWithoutAuth(customBody?: unknown) {
-    try {
-      const resp = await axios({ url, method, data: customBody ?? body });
-      setData(resp.data);
-    } catch (err) {
-      handleFetchWithoutAuthErr(err);
-    }
+  function fetchSetup() {
+    if (!persistDataWhileFetching) setData(null);
+    setErr(null);
+    setLoading(true);
   }
 
-  function handleFetchWithoutAuthErr(err: unknown) {
-    if (isAxiosError(err)) {
-      if (!err.response) return toast("something went wrong");
-      setErr(err.response);
-    } else {
-      console.log("hi");
-      toast("something went completely fucking wrong");
-    }
+  function notifyIfCantFetch(): { ok: boolean } {
+    if (isOnline()) return { ok: true };
+
+    setLoading(false);
+    toast("Please check your internet connection");
+    return { ok: false };
   }
 
   async function fetchWithAuth(customBody?: unknown) {
@@ -113,20 +108,6 @@ export default function useFetch<T extends unknown>({
     }
   }
 
-  function fetchSetup() {
-    if (!persistDataWhileFetching) setData(null);
-    setErr(null);
-    setLoading(true);
-  }
-
-  function notifyIfCantFetch(): { ok: boolean } {
-    if (isOnline()) return { ok: true };
-
-    setLoading(false);
-    toast("Please check your internet connection");
-    return { ok: false };
-  }
-
   function fetchTeardown() {
     setLoading(false);
   }
@@ -137,6 +118,25 @@ export default function useFetch<T extends unknown>({
 
   function getAuthHeader(accessToken: string) {
     return `Bearer ${accessToken}`;
+  }
+
+  async function fetchWithoutAuth(customBody?: unknown) {
+    try {
+      const resp = await axios({ url, method, data: customBody ?? body });
+      setData(resp.data);
+    } catch (err) {
+      handleFetchWithoutAuthErr(err);
+    }
+  }
+
+  function handleFetchWithoutAuthErr(err: unknown) {
+    if (isAxiosError(err)) {
+      if (!err.response) return toast("something went wrong");
+      setErr(err.response);
+    } else {
+      console.log("hi");
+      toast("something went completely fucking wrong");
+    }
   }
 
   return { err, data, loading, setLoading, fetch };
