@@ -1,3 +1,4 @@
+import ReduxProvider from "@/redux/provider";
 import "./globals.css";
 import type { Metadata } from "next";
 import { ToastContainer } from "react-toastify";
@@ -16,8 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        {children}
-        <ToastContainer hideProgressBar />
+        <ReduxProvider>
+          {children}
+          <ToastContainer hideProgressBar />
+        </ReduxProvider>
       </body>
     </html>
   );
