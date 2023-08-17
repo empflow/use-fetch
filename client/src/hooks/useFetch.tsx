@@ -1,3 +1,4 @@
+"use client";
 import { AxiosError, isAxiosError } from "axios";
 import axios from "../utils/axios";
 import Cookies from "js-cookie";
