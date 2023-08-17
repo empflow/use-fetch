@@ -21,6 +21,7 @@ export default function Home() {
   useEffect(() => {
     if (!hasSubmitted) return;
     storeAuthRespData(data);
+    location.replace("/dashboard");
   }, [data]);
 
   async function handleFormSubmit(e: FormEvent) {
