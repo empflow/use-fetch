@@ -26,8 +26,8 @@ export default function Home() {
 
   async function handleFormSubmit(e: FormEvent) {
     e.preventDefault();
-    setHasSubmitted(true);
     await fetch();
+    setHasSubmitted(true);
   }
   return (
     <div>

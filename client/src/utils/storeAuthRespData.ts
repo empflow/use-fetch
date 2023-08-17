@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import Cookies from "js-cookie";
+import Cookies, { CookieAttributes } from "js-cookie";
 
 const ninetyDays = 90;
 const daysIn15Mins = 0.010416;
@@ -12,9 +12,17 @@ export default function storeAuthRespData(data: any) {
   }
   const refreshTokenSerialized = JSON.stringify(data.refreshToken);
 
+  const commonOpts: CookieAttributes = {
+    sameSite: "Strict",
+  };
+
   Cookies.set("accessToken", accessToken, {
     expires: daysIn15Mins,
+    ...commonOpts,
   });
-  Cookies.set("refreshToken", refreshTokenSerialized, { expires: ninetyDays });
-  Cookies.set("username", username);
+  Cookies.set("refreshToken", refreshTokenSerialized, {
+    expires: ninetyDays,
+    ...commonOpts,
+  });
+  Cookies.set("username", username, { ...commonOpts });
 }

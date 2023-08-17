@@ -66,7 +66,9 @@ export default function useFetch<T extends unknown>({
       const resp = await axios({ url, method, data: customBody ?? body });
       setData(resp.data);
     } catch (err) {
-      console.error(err);
+      if (isAxiosError(err)) {
+        console.log("is axios error");
+      }
     }
   }
 
@@ -104,6 +106,8 @@ export default function useFetch<T extends unknown>({
 
   function notifyIfCantFetch(): { ok: boolean } {
     if (isOnline()) return { ok: true };
+
+    setLoading(false);
     toast("Please check your internet connection");
     return { ok: false };
   }
