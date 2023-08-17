@@ -1,16 +1,27 @@
 import { toast } from "react-toastify";
 import Cookies, { CookieAttributes } from "js-cookie";
+import isObject from "./isObject";
+import notifyGenericErr from "./notifyGenericErr";
+import isString from "./isString";
 
 const ninetyDays = 90;
 const daysIn15Mins = 0.010416;
 
-export default function storeAuthRespData(data: any) {
+export default function storeAuthRespData(data: unknown): { ok: boolean } {
+  if (!isObject(data)) {
+    notifyGenericErr();
+    return { ok: false };
+  }
   const { refreshToken, accessToken, username } = data;
 
-  if (!refreshToken || !accessToken || !username) {
-    return toast("some data from auth resp is not present");
+  if (
+    !isString(refreshToken) ||
+    !isString(accessToken) ||
+    !isString(username)
+  ) {
+    return { ok: false };
   }
-  const refreshTokenSerialized = JSON.stringify(data.refreshToken);
+  const refreshTokenSerialized = JSON.stringify(refreshToken);
 
   const commonOpts: CookieAttributes = {
     sameSite: "Strict",
@@ -25,4 +36,6 @@ export default function storeAuthRespData(data: any) {
     ...commonOpts,
   });
   Cookies.set("username", username, { ...commonOpts });
+
+  return { ok: true };
 }
