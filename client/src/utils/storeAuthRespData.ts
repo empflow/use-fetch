@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 import Cookies, { CookieAttributes } from "js-cookie";
 import isObject from "./isObject";
-import notifyGenericErr from "./notifyGenericErr";
+import notifyGenericErr from "./notify";
 import isString from "./isString";
 import { TAuthResp } from "@shared/types";
 

@@ -4,7 +4,7 @@ import { AxiosError, AxiosResponse, isAxiosError } from "axios";
 import axios from "../utils/axios";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import notify, { notifyGenericErr } from "@/utils/notify";
 import isOnline from "@/utils/isOnline";
 import storeAuthRespData from "@/utils/storeAuthRespData";
 import isValidAuthResp from "@/utils/isValidAuthResp";

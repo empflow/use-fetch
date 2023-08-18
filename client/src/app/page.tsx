@@ -1,7 +1,7 @@
 "use client";
 import useFetch from "@/hooks/useFetch";
 import isValidAuthResp from "@/utils/isValidAuthResp";
-import notifyGenericErr from "@/utils/notifyGenericErr";
+import notifyGenericErr from "@/utils/notify";
 import storeAuthRespData from "@/utils/storeAuthRespData";
 import { FormEvent, useEffect, useState } from "react";
 
