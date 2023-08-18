@@ -2,7 +2,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.min.css";
-import GlobalContextProvider from "./GlobalContextProvider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,10 +16,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <GlobalContextProvider>
-          {children}
-          <ToastContainer hideProgressBar />
-        </GlobalContextProvider>
+        {children}
+        <ToastContainer hideProgressBar />
       </body>
     </html>
   );

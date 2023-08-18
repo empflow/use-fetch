@@ -8,9 +8,7 @@ import notify, { notifyGenericErr } from "@/utils/notify";
 import isOnline from "@/utils/isOnline";
 import storeAuthRespData from "@/utils/storeAuthRespData";
 import isValidAuthResp from "@/utils/isValidAuthResp";
-import notifyGenericErr from "@/utils/notifyGenericErr";
-import useGetContext from "./useGetContext";
-import { GlobalContext } from "@/app/GlobalContextProvider";
+import Link from "next/link";
 
 type HttpMethod =
   | "get"
@@ -38,7 +36,6 @@ export default function useFetch<T extends unknown>({
   body,
   opts,
 }: Params) {
-  const { notify } = useGetContext(GlobalContext);
   const {
     fetchImmediately = true,
     persistDataWhileFetching = true,
@@ -49,6 +46,11 @@ export default function useFetch<T extends unknown>({
   const [data, setData] = useState<null | T>(null);
   const [loading, setLoading] = useState(false);
   const genericErrContent = "Something went wrong. Try again later";
+  const notSignedInNotificationContent = (
+    <>
+      You are not signed in. <Link href="/">Sign in</Link>
+    </>
+  );
 
   useEffect(() => {
     (async () => {
@@ -76,7 +78,7 @@ export default function useFetch<T extends unknown>({
     if (isOnline()) return { ok: true };
 
     setLoading(false);
-    notify("noInternet", "no internet");
+    notify("Check your internet connection and try again");
     return { ok: false };
   }
 
@@ -121,7 +123,7 @@ export default function useFetch<T extends unknown>({
   async function getAndStoreNewTokens(): Promise<TAuthResp | null> {
     const refreshToken = Cookies.get("refreshToken");
     if (!refreshToken) {
-      notify("notSignedIn", "not signed in");
+      notify(notSignedInNotificationContent);
       return null;
     }
 
@@ -158,7 +160,7 @@ export default function useFetch<T extends unknown>({
     if (!isAxiosError(err) || !err.response) {
       notifyGenericErr();
     }
-    notify("notSignedIn", "not signed in");
+    notify(notSignedInNotificationContent);
   }
 
   async function fetchWithoutAuth(customBody?: unknown) {
